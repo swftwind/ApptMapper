@@ -26,9 +26,13 @@ def check_for_wall(dx, dy):
     x, y = canvas.coords(roombaObj)
     x, y = map(int, (x + dx + 10, y + dy + 10)) # adds the future/requested coordinates to the current coordinates
 
-    # note: the + 10 is to account for the fact that the origin of the image is the top left, and the image is 21x21, 
-    # so we move an extra 10 units to shift the 'effective center' according to the collisions that we've set up
+    '''
+    note:   the + 10 is to account for the fact that the origin of the image is the top left, and the image is 21x21, 
+            so we move an extra 10 units to shift the 'effective center' according to the collisions that we've set up
 
+            the origin (0,0) is top left, and the positive x-dir is to the right whereas the POSITIVE y-dir is DOWN
+    '''
+    
     if floorJSON.get(f"({x}, {y})") == "W": # checks if the new coordinates contain a wall
         return True
     else:
