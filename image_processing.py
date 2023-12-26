@@ -3,7 +3,7 @@ import csv
 import json
 
 # function to be called in main to determine which pixels are 'floor' and which are 'wall'
-def getImageCSV(filename: str):
+def getImageJSON(filename: str):
     
     img = Image.open(filename)
     img = img.convert("RGB")
@@ -24,7 +24,7 @@ def getImageCSV(filename: str):
             pixelValue = img.getpixel((xPos, yPos))
 
             # each pixel RGB tuple is checked compared to the threshold value to determine whether it is a 'floor' or 'wall' pixel.
-            if ((pixelValue[0] > floorThresh) or (pixelValue[1] > floorThresh) or (pixelValue[2] > floorThresh)):
+            if ((pixelValue[0] < floorThresh) or (pixelValue[1] < floorThresh) or (pixelValue[2] < floorThresh)):
                 pixelType = 'W'
             else:
                 pixelType = 'F'

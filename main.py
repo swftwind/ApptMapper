@@ -2,38 +2,56 @@ from PIL import Image, ImageTk
 import tkinter as tk
 import image_processing
 from PIL import Image, ImageTk
-from image_processing import getImageCSV
 import math
+from image_processing import getImageJSON
 
-# Get floorplan Image
+#Floorplan START
 floorplan = input("Floorplan filename:") # IMPORTANT DO NOT DELETE
 floorplanPath = 'floorplans/' + floorplan + '.png'
+floorCSV = getImageJSON(floorplanPath)
+#Floorplan END
 
 global roombaRotation
+# degrees of rotation based on the roomba starting out facing north/up.
+# #left is positive and right is negative, but the number is always calculated to be between 0 and 359 degrees.
 roombaRotation = 0
+
+def check_for_wall(dx, dy):
+    # check if the pixel at the position i want to move to contains a wall, by checking floorCSV with the given coordinates.
+    # #currently centered on the top left of the roomba and does not account for height/width of the image.
+    x, y = canvas.coords(roombaObj)
+    x, y = map(int, (x + dx, y + dy)) # adds the future/requested coordinates to the current coordinates
+    if floorCSV.get(f"({x}, {y})") == "W": # checks if the new coordinates contain a wall
+        return True
+    else:
+        return False
 
 def update_roomba_rotation(angle_degrees):
     global roombaRotation
     roombaRotation += angle_degrees
-    roombaRotation %= 360  # Ensure the angle stays within 0 to 359 degrees
+    roombaRotation %= 360 # Ensure the angle stays within 0 to 359 degrees
 
 def create_movable_object(x, y):
     # Create an image on the canvas
     roomba_id = canvas.create_image(x, y, anchor=tk.NW, image=tk_roomba_image)
-    # Attach the PhotoImage to the canvas to prevent garbage collection
+    # Attach the image to the canvas to prevent garbage collection
     canvas.itemconfig(roomba_id, image=tk_roomba_image)
     return roomba_id
 
 # Movement/Rotations START
 def move(event, dx, dy):
-    canvas.move(object_id, dx, dy)
+    dx = round(dx)
+    dy = round(dy)
+    #print(dx, dy)
+    if not check_for_wall(dx, dy):
+        canvas.move(roombaObj, dx, dy)
 
 def rotate_image(angle_degrees):
     update_roomba_rotation(angle_degrees)
     global roomba_image, tk_roomba_image  # Declare these as global to modify them
     roomba_image = roomba_image.rotate(angle_degrees)
     tk_roomba_image = ImageTk.PhotoImage(roomba_image)
-    canvas.itemconfig(object_id, image=tk_roomba_image)
+    canvas.itemconfig(roombaObj, image=tk_roomba_image)
 
 def move_forward(event):
     angle_rad = math.radians(roombaRotation)
@@ -68,10 +86,7 @@ tk_image = ImageTk.PhotoImage(layout_image)
 canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
 
 # Create a movable object (roomba image) at an initial position
-object_id = create_movable_object(20, 20)
-
-# Load collisions dictionary from image_processing.py
-collisionsDict = getImageCSV(floorplanPath)
+roombaObj = create_movable_object(200, 200)
 
 # Bind keys to the movement functions
 window.bind("<Up>", move_forward)
