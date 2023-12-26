@@ -1,6 +1,7 @@
-from PIL import Image, ImageTk
 import tkinter as tk
-# import image_processing
+import image_processing
+from PIL import Image, ImageTk
+from image_processing import getImageCSV
 
 def move_up(event):
     canvas.move(object_id, 0, -1)  # Move object up
@@ -33,6 +34,9 @@ canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
 
 # Create a movable object, e.g., a rectangle
 object_id = canvas.create_oval(20, 20, 10, 10, fill="blue")  # Adjust size and color as needed
+
+# Load collisions dictionary from image_processing.py
+collisionsDict = getImageCSV(floorplanPath)
 
 # Bind keys to the movement functions
 window.bind("<Up>", move_up)
