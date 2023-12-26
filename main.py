@@ -1,9 +1,11 @@
 import math
 import tkinter as tk
 import image_processing
+import virtual_infrared_sensor
 from PIL import Image, ImageTk
 from PIL import Image, ImageTk
 from image_processing import getImageJSON
+from virtual_infrared_sensor import getDistances
 
 #Floorplan START
 floorplan = input("Input floorplan filename: ")
@@ -14,6 +16,9 @@ floorJSON = getImageJSON(floorplanPath)
 # roomba input 'spawnpoint'
 startPosX = input("Input starting x-coord: ")
 startPosY = input("Input starting y-coord: ")
+
+# posXY is updated by movement functions throughout program and is needed as a parameter by other functions
+global posXY
 
 global roombaRotation
 # degrees of rotation based on the roomba starting out facing north/up.
@@ -69,9 +74,16 @@ def move_forward(event):
     angle_rad = math.radians(roombaRotation)
     move(event, -1 * math.sin(angle_rad), -1 * math.cos(angle_rad))
 
+    global posXY
+    posXY = canvas.coords(roombaObj)
+    # print(getDistances(posXY, roombaRotation, floorJSON)) # DIAGNOSTIC
+
 def move_back(event):
     angle_rad = math.radians(roombaRotation)
     move(event, math.sin(angle_rad), math.cos(angle_rad))
+
+    global posXY
+    posXY = canvas.coords(roombaObj)
 
 def rotate_left(event):
     rotate_image(45)  # Rotate 45 degrees to the left
@@ -105,6 +117,21 @@ window.bind("<Up>", move_forward)
 window.bind("<Down>", move_back)
 window.bind("<Left>", rotate_left)
 window.bind("<Right>", rotate_right)
+
+'''
+lambda is required here because in order to use tkinter's 'bind' method, there must be a single parameter 'event',
+so we use lambda to combine the 3 required parameters for getDistances() into one lamba function with the 'event'
+parameter while still handing off currentPos, facingAngle, and posDict to getDistances(), which are the parameters
+it needs as can be seen in virtual_infrared_sensor.py
+'''
+
+# ensure parameters are correct
+posXY = canvas.coords(roombaObj)
+
+# Bind the 'g' key using lambda to get distances anytime g is pressed
+# tuple printed in terminal is in the order of (distance between left sensor and left wall, 
+# distance from front sensor and front wall, distance from right sensor to right wall)
+window.bind('g', lambda event: getDistances(posXY, roombaRotation, floorJSON))
 
 # Set focus on the window to receive key events
 window.focus_set()
