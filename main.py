@@ -1,14 +1,14 @@
-from PIL import Image, ImageTk
+import math
 import tkinter as tk
 import image_processing
 from PIL import Image, ImageTk
-import math
+from PIL import Image, ImageTk
 from image_processing import getImageJSON
 
 #Floorplan START
 floorplan = input("Floorplan filename:") # IMPORTANT DO NOT DELETE
 floorplanPath = 'floorplans/' + floorplan + '.png'
-floorCSV = getImageJSON(floorplanPath)
+floorJSON = getImageJSON(floorplanPath)
 #Floorplan END
 
 global roombaRotation
@@ -17,11 +17,11 @@ global roombaRotation
 roombaRotation = 0
 
 def check_for_wall(dx, dy):
-    # check if the pixel at the position i want to move to contains a wall, by checking floorCSV with the given coordinates.
+    # check if the pixel at the position i want to move to contains a wall, by checking floorJSON with the given coordinates.
     # #currently centered on the top left of the roomba and does not account for height/width of the image.
     x, y = canvas.coords(roombaObj)
     x, y = map(int, (x + dx, y + dy)) # adds the future/requested coordinates to the current coordinates
-    if floorCSV.get(f"({x}, {y})") == "W": # checks if the new coordinates contain a wall
+    if floorJSON.get(f"({x}, {y})") == "W": # checks if the new coordinates contain a wall
         return True
     else:
         return False

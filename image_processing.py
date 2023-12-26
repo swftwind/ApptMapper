@@ -1,6 +1,6 @@
-from PIL import Image, ImageTk
 import csv
 import json
+from PIL import Image, ImageTk
 
 # function to be called in main to determine which pixels are 'floor' and which are 'wall'
 def getImageJSON(filename: str):
