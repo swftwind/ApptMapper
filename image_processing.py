@@ -14,7 +14,7 @@ def getImageJSON(filename: str):
     # initiate variable conditions (the origin for the getpixel((x, y)) function is the top left corner)
     # xPos, yPos = 0
     pixelValue = (0, 0, 0)
-    floorThresh = 100
+    floorThresh = 50 # if a pixel has one of its RGB tuple values > this threshold, it will be considered white
     pixelType = 'F' # temporary storage for whether a particular pixel (x, y) is a 'floor' pixel or 'wall' pixel
     posDict = {} # dictionary where keys are position strings of the form '(x, y)', and values are strings 'F' for floor or 'W' for wall
 

@@ -6,10 +6,14 @@ from PIL import Image, ImageTk
 from image_processing import getImageJSON
 
 #Floorplan START
-floorplan = input("Floorplan filename:") # IMPORTANT DO NOT DELETE
+floorplan = input("Input floorplan filename: ")
 floorplanPath = 'floorplans/' + floorplan + '.png'
 floorJSON = getImageJSON(floorplanPath)
 #Floorplan END
+
+# roomba input 'spawnpoint'
+startPosX = input("Input starting x-coord: ")
+startPosY = input("Input starting y-coord: ")
 
 global roombaRotation
 # degrees of rotation based on the roomba starting out facing north/up.
@@ -20,7 +24,11 @@ def check_for_wall(dx, dy):
     # check if the pixel at the position i want to move to contains a wall, by checking floorJSON with the given coordinates.
     # #currently centered on the top left of the roomba and does not account for height/width of the image.
     x, y = canvas.coords(roombaObj)
-    x, y = map(int, (x + dx, y + dy)) # adds the future/requested coordinates to the current coordinates
+    x, y = map(int, (x + dx + 10, y + dy + 10)) # adds the future/requested coordinates to the current coordinates
+
+    # note: the + 10 is to account for the fact that the origin of the image is the top left, and the image is 21x21, 
+    # so we move an extra 10 units to shift the 'effective center' according to the collisions that we've set up
+
     if floorJSON.get(f"({x}, {y})") == "W": # checks if the new coordinates contain a wall
         return True
     else:
@@ -86,7 +94,7 @@ tk_image = ImageTk.PhotoImage(layout_image)
 canvas.create_image(0, 0, anchor=tk.NW, image=tk_image)
 
 # Create a movable object (roomba image) at an initial position
-roombaObj = create_movable_object(200, 200)
+roombaObj = create_movable_object(startPosX, startPosY)
 
 # Bind keys to the movement functions
 window.bind("<Up>", move_forward)
