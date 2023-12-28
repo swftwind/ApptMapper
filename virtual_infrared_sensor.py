@@ -3,17 +3,24 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
     unitsToWallF = 0
     unitsToWallR = 0
     
+    # list of caridnal directions to iterate over
     cardinalDirections = ["N", "NW", "W", "SW", "S", "SE", "E", "NE"]
+    # list of distances in each of said cardinal directions above
     distanceList = []
+    # list of endpt pixels, distances above are the distances between endpt pixels and current position
     pxEndList = []
     
     for directon in cardinalDirections:
 
+        # current position of roomba
         distanceToWall = 0
         xPos = int(currentPos[0] + 10)
         yPos = int(currentPos[1] + 10)
+
+        # check dictionary to determine when distance counter must stop (tracer hit a wall)
         wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
+        # draw lines in each of the cardinal directions counting up pixels until the line hits a wall
         while (wallOrFloor != 'W'):
             distanceToWall += 1
             
@@ -47,9 +54,12 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
 
             wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
+        # store relevant data to return for algorithm use later
         distanceList.append(distanceToWall)
         pxEndList.append((xPos, yPos))
-    # 
+    
+    # we have measurements in each direction, but our robot is not necessarily facing any of these directions,
+    # therefore we must set distances relative to direction robot is facing
     if (facingAngle == 0):
         unitsToWallL = distanceList[2]
         unitsToWallF = distanceList[0]
@@ -94,4 +104,6 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
     distData = (distances, distanceList, pxEndList)
 
     # print(distances) # DIAGNOSTIC
+
+    # distData is a list 3 elements long which houses lists and tuples above w/ relevant data
     return distData
