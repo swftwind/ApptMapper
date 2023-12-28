@@ -130,7 +130,7 @@ it needs as can be seen in virtual_infrared_sensor.py
 posXY = canvas.coords(roombaObj)
 
 # wrapper function to get distances using virtual_infrared_sensor.py
-def wrapperFunction(event):
+def wrapperFunction():
     global distanceData
     distanceData = getDistances(posXY, roombaRotation, floorJSON)
     # distanceData is a list with 3 elements, the first is the tuple of lengths from the 3 sensors (left, front, right, in that order),
@@ -143,18 +143,41 @@ def wrapperFunction(event):
 global lineList
 lineList = []
 
+# switch distances labels on/off
+global distLabelsOn
+distLabelsOn: bool = False 
+
+# flipflop function for toggling between lines or lines + label values
+def distLabelsToggle():
+    global distLabelsOn
+    distLabelsOn = not(distLabelsOn)
+
 def drawTracers():
     clearTracers()
-
     # uses pixel endpts to draw lines to visualize the lengths each number represents
+    global distLabelsOn
+
+    x = 0
     for lineEndPts in distanceData[2]:
         # Coordinates of the line's start and end points
         x1, y1 = (int(posXY[0]) + 10), (int(posXY[1]) + 10) # Starting point (x1, y1)
         x2, y2 = lineEndPts[0], lineEndPts[1] # Ending point (x2, y2)
-
+        
+        delta = 25
+        if ((distLabelsOn) and (((distanceData[1])[x]) > 25)):
+            if (x2 > x1):
+                x2 -= delta
+            elif (x2 < x1):
+                x2 += delta
+            if (y2 > y1):
+                y2 -= delta
+            elif (y2 < y1):
+                y2 += delta
+            
         # Draw a line from (x1, y1) to (x2, y2)
         lineID = canvas.create_line(x1, y1, x2, y2, fill = "blue", width = 1, dash = (4, 2), arrow = tk.LAST)
         lineList.append(lineID)
+        x += 1
 
 # clears ANY and ALL existing lines/tracers
 def clearTracers():
@@ -164,7 +187,10 @@ def clearTracers():
 # Bind the 'g' key using lambda to get distances anytime g is pressed
 # tuple printed in terminal is in the order of (distance between left sensor and left wall, 
 # distance from front sensor and front wall, distance from right sensor to right wall)
-window.bind('g', lambda event: wrapperFunction(event))
+window.bind('g', lambda event: wrapperFunction())
+
+# When 'h' is pressed toggles on/off showing distance labels.
+window.bind('h', lambda event: distLabelsToggle())
 
 # Set focus on the window to receive key events
 window.focus_set()
