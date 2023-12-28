@@ -1,98 +1,93 @@
-import math
-import tkinter as tk
-
 def getDistances(currentPos: list, facingAngle: int, posDict: dict):
-
-    # initialize variables used later
     unitsToWallL = 0
     unitsToWallF = 0
     unitsToWallR = 0
     
-    numDirs = 8
-    distList = []
+    cardinalDirections = ["N", "NW", "W", "SW", "S", "SE", "E", "NE"]
+    distanceList = []
 
-    for dir in range(numDirs):
+    for directon in cardinalDirections:
 
-        dist = 0
+        distanceToWall = 0
         xPos = int(currentPos[0])
         yPos = int(currentPos[1])
         wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
         while (wallOrFloor != 'W'):
-            dist += 1
+            distanceToWall += 1
             
-            if (dir == 0): # N
+            if (directon == "N"):
                 yPos -= 1
 
-            if (dir == 1): # NW
+            if (directon == "NW"):
                 xPos -= 1
                 yPos -= 1
             
-            if (dir == 2): # W
+            if (directon == "W"):
                 xPos -= 1
             
-            if (dir == 3): # SW
+            if (directon == "SW"):
                 xPos -= 1
                 yPos += 1
             
-            if (dir == 4): # S
+            if (directon == "S"):
                 yPos += 1
 
-            if (dir == 5): # SE
+            if (directon == "SE"):
                 xPos += 1
                 yPos += 1
             
-            if (dir == 6): # E
+            if (directon == "E"):
                 xPos += 1
 
-            if (dir == 7): # NE
+            if (directon == "NE"):
                 xPos += 1
                 yPos -= 1
 
             wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
-        distList.append(dist)
+        distanceList.append(distanceToWall)
 
     # 
     if (facingAngle == 0):
-        unitsToWallL = distList[2]
-        unitsToWallF = distList[0]
-        unitsToWallR = distList[6]
+        unitsToWallL = distanceList[2]
+        unitsToWallF = distanceList[0]
+        unitsToWallR = distanceList[6]
 
     if (facingAngle == 45):
-        unitsToWallL = distList[3]
-        unitsToWallF = distList[1]
-        unitsToWallR = distList[7]
+        unitsToWallL = distanceList[3]
+        unitsToWallF = distanceList[1]
+        unitsToWallR = distanceList[7]
 
     if (facingAngle == 90):
-        unitsToWallL = distList[4]
-        unitsToWallF = distList[2]
-        unitsToWallR = distList[0]
+        unitsToWallL = distanceList[4]
+        unitsToWallF = distanceList[2]
+        unitsToWallR = distanceList[0]
 
     if (facingAngle == 135):
-        unitsToWallL = distList[5]
-        unitsToWallF = distList[3]
-        unitsToWallR = distList[1]
+        unitsToWallL = distanceList[5]
+        unitsToWallF = distanceList[3]
+        unitsToWallR = distanceList[1]
         
     if (facingAngle == 180):
-        unitsToWallL = distList[6]
-        unitsToWallF = distList[4]
-        unitsToWallR = distList[2]
+        unitsToWallL = distanceList[6]
+        unitsToWallF = distanceList[4]
+        unitsToWallR = distanceList[2]
 
     if (facingAngle == 225):
-        unitsToWallL = distList[7]
-        unitsToWallF = distList[5]
-        unitsToWallR = distList[3]
+        unitsToWallL = distanceList[7]
+        unitsToWallF = distanceList[5]
+        unitsToWallR = distanceList[3]
 
     if (facingAngle == 270):
-        unitsToWallL = distList[0]
-        unitsToWallF = distList[6]
-        unitsToWallR = distList[4]
+        unitsToWallL = distanceList[0]
+        unitsToWallF = distanceList[6]
+        unitsToWallR = distanceList[4]
 
     if (facingAngle == 315):
-        unitsToWallL = distList[1]
-        unitsToWallF = distList[7]
-        unitsToWallR = distList[5]
+        unitsToWallL = distanceList[1]
+        unitsToWallF = distanceList[7]
+        unitsToWallR = distanceList[5]
     
     distances = (unitsToWallL, unitsToWallF, unitsToWallR)
 

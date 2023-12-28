@@ -9,7 +9,7 @@ def getImageJSON(filename: str):
     img = img.convert("RGB")
 
     # get image dimensions
-    width, height = img.size
+    imageWidth, imageHeight = img.size
 
     # initiate variable conditions (the origin for the getpixel((x, y)) function is the top left corner)
     # xPos, yPos = 0
@@ -19,8 +19,8 @@ def getImageJSON(filename: str):
     posDict = {} # dictionary where keys are position strings of the form '(x, y)', and values are strings 'F' for floor or 'W' for wall
 
     # outer for loop iterates over yPos, for each iteration of outer loop a row of pixels is processed by inner for loop
-    for yPos in range(height):
-        for xPos in range(width):
+    for yPos in range(imageHeight):
+        for xPos in range(imageWidth):
             pixelValue = img.getpixel((xPos, yPos))
 
             # each pixel RGB tuple is checked compared to the threshold value to determine whether it is a 'floor' or 'wall' pixel.
@@ -28,7 +28,7 @@ def getImageJSON(filename: str):
                 pixelType = 'W'
             else:
                 pixelType = 'F'
-        
+
             # adds each pixel position and value into dict
             posDict['(' + str(xPos) + ', ' + str(yPos) + ')'] = pixelType
         

@@ -20,14 +20,13 @@ startPosY = input("Input starting y-coord: ")
 # posXY is updated by movement functions throughout program and is needed as a parameter by other functions
 global posXY
 
-global roombaRotation
 # degrees of rotation based on the roomba starting out facing north/up.
 # #left is positive and right is negative, but the number is always calculated to be between 0 and 359 degrees.
+global roombaRotation
 roombaRotation = 0
 
 def check_for_wall(dx, dy):
     # check if the pixel at the position i want to move to contains a wall, by checking floorJSON with the given coordinates.
-    # #currently centered on the top left of the roomba and does not account for height/width of the image.
     x, y = canvas.coords(roombaObj)
     x, y = map(int, (x + dx + 10, y + dy + 10)) # adds the future/requested coordinates to the current coordinates
 
