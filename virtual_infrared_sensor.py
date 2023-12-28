@@ -10,12 +10,13 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
     
     numDirs = 8
     distList = []
+    pxEndList = []
 
     for dir in range(numDirs):
 
         dist = 0
-        xPos = int(currentPos[0])
-        yPos = int(currentPos[1])
+        xPos = (int(currentPos[0]) + 10)
+        yPos = (int(currentPos[1]) + 10)
         wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
         while (wallOrFloor != 'W'):
@@ -52,6 +53,7 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
             wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
         distList.append(dist)
+        pxEndList.append((xPos, yPos))
 
     # 
     if (facingAngle == 0):
@@ -95,7 +97,7 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
         unitsToWallR = distList[5]
     
     distances = (unitsToWallL, unitsToWallF, unitsToWallR)
+    distData = (distances, distList, pxEndList)
 
-    # print(type(distances)) # DIAGNOSTIC
-    print(distances) # DIAGNOSTIC
-    return distances
+    # print(distances) # DIAGNOSTIC
+    return distData
