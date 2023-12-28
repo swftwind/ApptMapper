@@ -5,12 +5,13 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
     
     cardinalDirections = ["N", "NW", "W", "SW", "S", "SE", "E", "NE"]
     distanceList = []
-
+    pxEndList = []
+    
     for directon in cardinalDirections:
 
         distanceToWall = 0
-        xPos = int(currentPos[0])
-        yPos = int(currentPos[1])
+        xPos = int(currentPos[0] + 10)
+        yPos = int(currentPos[1] + 10)
         wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
         while (wallOrFloor != 'W'):
@@ -47,7 +48,7 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
             wallOrFloor = posDict.get('(' + str(xPos) + ', ' + str(yPos) + ')')
 
         distanceList.append(distanceToWall)
-
+        pxEndList.append((xPos, yPos))
     # 
     if (facingAngle == 0):
         unitsToWallL = distanceList[2]
@@ -90,7 +91,7 @@ def getDistances(currentPos: list, facingAngle: int, posDict: dict):
         unitsToWallR = distanceList[5]
     
     distances = (unitsToWallL, unitsToWallF, unitsToWallR)
+    distData = (distances, distanceList, pxEndList)
 
-    # print(type(distances)) # DIAGNOSTIC
-    print(distances) # DIAGNOSTIC
-    return distances
+    # print(distances) # DIAGNOSTIC
+    return distData

@@ -72,6 +72,7 @@ def rotate_image(angle_degrees):
 def move_forward(event):
     angle_rad = math.radians(roombaRotation)
     move(event, -1 * math.sin(angle_rad), -1 * math.cos(angle_rad))
+    clearTracers()
 
     global posXY
     posXY = canvas.coords(roombaObj)
@@ -80,6 +81,7 @@ def move_forward(event):
 def move_back(event):
     angle_rad = math.radians(roombaRotation)
     move(event, math.sin(angle_rad), math.cos(angle_rad))
+    clearTracers()
 
     global posXY
     posXY = canvas.coords(roombaObj)
@@ -118,19 +120,51 @@ window.bind("<Left>", rotate_left)
 window.bind("<Right>", rotate_right)
 
 '''
-lambda is required here because in order to use tkinter's 'bind' method, there must be a single parameter 'event',
+lambda is required below because in order to use tkinter's 'bind' method, there must be a single parameter 'event',
 so we use lambda to combine the 3 required parameters for getDistances() into one lamba function with the 'event'
 parameter while still handing off currentPos, facingAngle, and posDict to getDistances(), which are the parameters
 it needs as can be seen in virtual_infrared_sensor.py
-'''
+''' # this was changed after using a wrapper function, now lambda is just there for funsies, can remove if/when optimizing
 
-# ensure parameters are correct
+# ensure parameters are correct for getDistances()
 posXY = canvas.coords(roombaObj)
+
+# wrapper function to get distances using virtual_infrared_sensor.py
+def wrapperFunction(event):
+    global distanceData
+    distanceData = getDistances(posXY, roombaRotation, floorJSON)
+    # distanceData is a list with 3 elements, the first is the tuple of lengths from the 3 sensors (left, front, right, in that order),
+    # the second is a list (inside the first list) with all lengths from walls in the 8 cardinal directions, the third and last elements
+    # is the coords of each of the 8 endpt pixels to where lines will be drawn
+
+    drawTracers()
+
+# to keep track of line ids to delete to clear canvas
+global lineList
+lineList = []
+
+def drawTracers():
+    clearTracers()
+
+    # uses pixel endpts to draw lines to visualize the lengths each number represents
+    for lineEndPts in distanceData[2]:
+        # Coordinates of the line's start and end points
+        x1, y1 = (int(posXY[0]) + 10), (int(posXY[1]) + 10) # Starting point (x1, y1)
+        x2, y2 = lineEndPts[0], lineEndPts[1] # Ending point (x2, y2)
+
+        # Draw a line from (x1, y1) to (x2, y2)
+        lineID = canvas.create_line(x1, y1, x2, y2, fill = "blue", width = 1, dash = (4, 2), arrow = tk.LAST)
+        lineList.append(lineID)
+
+# clears ANY and ALL existing lines/tracers
+def clearTracers():
+    for line in lineList:
+        canvas.delete(line)
 
 # Bind the 'g' key using lambda to get distances anytime g is pressed
 # tuple printed in terminal is in the order of (distance between left sensor and left wall, 
 # distance from front sensor and front wall, distance from right sensor to right wall)
-window.bind('g', lambda event: getDistances(posXY, roombaRotation, floorJSON))
+window.bind('g', lambda event: wrapperFunction(event))
 
 # Set focus on the window to receive key events
 window.focus_set()
