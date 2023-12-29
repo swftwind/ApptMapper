@@ -155,12 +155,24 @@ def wrapperFunction():
 
 # switch distances labels on/off
 global distLabelsOn
-distLabelsOn: bool = False
+global actualDistancesOn
+distLabelsOn: int = 0
+actualDistancesOn = False
 
-# flipflop function for toggling between lines or lines + label values
+# flipflop function for toggling between lines or lines + label values or lines + human-observed label values
 def distLabelsToggle():
     global distLabelsOn
-    distLabelsOn = not (distLabelsOn)
+    global actualDistancesOn
+
+    distLabelsOn += 1
+
+    if (distLabelsOn >= 3):
+        distLabelsOn = 0
+
+    if (distLabelsOn == 2):
+        actualDistancesOn = True
+    else:
+        actualDistancesOn = False
 
 def clearDistanceText():
     for coordText in distanceTextList:
@@ -170,12 +182,21 @@ def drawDistanceText():
     cardinalDirections = ["n", "nw", "w", "sw", "s", "se", "e", "ne"]
     distList = distanceData[1]
     xyList = distanceData[2]
+
+    if (actualDistancesOn):
+        i = 0
+        for length in distList:
+            if ((i % 2) == 1):
+                distList[i] = int(length * 1.414)
+            i += 1
+
+    clearDistanceText()
     for index in range(0, 8):  # both distList and cardinalDirections have a length of 8
         x, y = xyList[index][0], xyList[index][1]  # Ending point (x, y)
         dist = distList[index]
         boxAnchor = cardinalDirections[index]
         # add distance text for each tracer
-        coordText = canvas.create_text(x, y, text=dist, anchor=boxAnchor)
+        coordText = canvas.create_text(x, y, text=dist, anchor=boxAnchor, fill = 'purple')
         distanceTextList.append(coordText)
 
 # clears ANY and ALL existing lines/tracers
@@ -189,6 +210,8 @@ def drawTracers():
     # uses pixel endpts to draw lines to visualize the lengths each number represents
     global distLabelsOn
     global lineList
+    global actualDistancesOn
+
     for i in range(0, 8):
         lineEndPts = distanceData[2][i]
         # Coordinates of the line's start and end points
@@ -196,7 +219,7 @@ def drawTracers():
         x2, y2 = lineEndPts[0], lineEndPts[1]  # Ending point (x2, y2)
 
         delta = 25
-        if ((distLabelsOn) and (((distanceData[1])[i]) > 25)):
+        if ((distLabelsOn != 0) and (((distanceData[1])[i]) > 25)):
             if (x2 > x1):
                 x2 -= delta
             elif (x2 < x1):
@@ -215,17 +238,20 @@ def drawTracers():
             else:
                 point_radius = 2
                 arrowVar = None
-                ptID = canvas.create_oval(x2 - point_radius, y2 - point_radius, x2 + point_radius, y2 + point_radius, fill="red", outline="red")
+                ptID = canvas.create_oval(x2 - point_radius, y2 - point_radius, x2 + point_radius, y2 + point_radius, fill="grey", outline="grey")
                 lineList.append(ptID)
             # if lines are too short (< 25 units), do not display them at all to make space for length labels in the 'h'-key toggled mode
             lineID = canvas.create_line(x1, y1, x2, y2, fill="blue", width=1, dash=(4, 2), arrow=arrowVar)
             lineList.append(lineID)
-            drawDistanceText()
+
         # if not in toggled mode, display arrows to edge of wall as normal as distance labels are not displayed in this mode
-        if (not (distLabelsOn)):
+        if (distLabelsOn == 0):
             # Draw a line from (x1, y1) to (x2, y2)
             lineID = canvas.create_line(x1, y1, x2, y2, fill="blue", width=1, dash=(4, 2), arrow=tk.LAST)
             lineList.append(lineID)
+    
+    if (distLabelsOn != 0):
+        drawDistanceText()
 
 # Bind the 'g' key using lambda to get distances anytime g is pressed
 # tuple printed in terminal is in the order of (distance between left sensor and left wall,
