@@ -173,10 +173,32 @@ def drawTracers():
                 y2 -= delta
             elif (y2 < y1):
                 y2 += delta
+
+            # if lines are of sufficient length, display arrow heads and full line lengths
+            if (((distanceData[1])[x]) > 50):
+                # Draw a line from (x1, y1) to (x2, y2)
+                lineID = canvas.create_line(x1, y1, x2, y2, fill = "blue", width = 1, dash = (4, 2), arrow = tk.LAST)
+                lineList.append(lineID)
+
+            # if lines are NOT of sufficient length to display arrows, but long enough to be displayed, show points instead of arrows
+            # for the sake of visual clarity
+            else:
+                point_radius = 2
+
+                # Draw a line from (x1, y1) to (x2, y2)
+                lineID = canvas.create_line(x1, y1, x2, y2, fill = "blue", width = 1, dash = (4, 2))
+                ptID = canvas.create_oval(x2 - point_radius, y2 - point_radius, x2 + point_radius, y2 + point_radius, fill="red", outline="red")
+                lineList.append(lineID)
+                lineList.append(ptID)
+
+            # if lines are too short (< 25 units), do not display them at all to make space for length labels in the 'h'-key toggled mode
             
-        # Draw a line from (x1, y1) to (x2, y2)
-        lineID = canvas.create_line(x1, y1, x2, y2, fill = "blue", width = 1, dash = (4, 2), arrow = tk.LAST)
-        lineList.append(lineID)
+        # if not in toggled mode, display arrows to edge of wall as normal as distance labels are not displayed in this mode
+        if (not(distLabelsOn)):
+            # Draw a line from (x1, y1) to (x2, y2)
+            lineID = canvas.create_line(x1, y1, x2, y2, fill = "blue", width = 1, dash = (4, 2), arrow = tk.LAST)
+            lineList.append(lineID)
+        
         x += 1
 
 # clears ANY and ALL existing lines/tracers
