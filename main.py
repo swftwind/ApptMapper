@@ -1,8 +1,5 @@
 import math
 import tkinter as tk
-import image_processing
-import virtual_infrared_sensor
-from PIL import Image, ImageTk
 from PIL import Image, ImageTk
 from image_processing import getImageJSON
 from virtual_infrared_sensor import getDistances
@@ -16,6 +13,11 @@ floorJSON = getImageJSON(floorplanPath)
 # roomba input 'spawnpoint'
 startPosX = input("Input starting x-coord: ")
 startPosY = input("Input starting y-coord: ")
+# check if there is a wall at the starting coordinates
+while floorJSON.get(f"({startPosX}, {startPosY})") == "W":
+    print("Those starting coordinates will place you into a wall.\nPlease select different starting coordinates.")
+    startPosX = input("Input starting x-coord: ")
+    startPosY = input("Input starting y-coord: ")
 
 # contains the toggle value of whether the user wants to see coordinates visible next to the arrow endpoints
 global showDistanceNumbers
@@ -70,32 +72,31 @@ def create_movable_object(x, y):
 def move(event, dx, dy):
     dx = round(dx)
     dy = round(dy)
-    # print(dx, dy)
     if not check_for_wall(dx, dy):
         canvas.move(roombaObj, dx, dy)
 
 def rotate_image(angle_degrees):
-    update_roomba_rotation(angle_degrees)
     global roomba_image, tk_roomba_image  # Declare these as global to modify them
+    update_roomba_rotation(angle_degrees)
     roomba_image = roomba_image.rotate(angle_degrees)
     tk_roomba_image = ImageTk.PhotoImage(roomba_image)
     canvas.itemconfig(roombaObj, image=tk_roomba_image)
 
 def move_forward(event):
+    global posXY
     angle_rad = math.radians(roombaRotation)
     move(event, -1 * math.sin(angle_rad), -1 * math.cos(angle_rad))
     clearTracers()
-
-    global posXY
+    clearDistanceText()
     posXY = canvas.coords(roombaObj)
     # print(getDistances(posXY, roombaRotation, floorJSON)) # DIAGNOSTIC
 
 def move_back(event):
+    global posXY
     angle_rad = math.radians(roombaRotation)
     move(event, math.sin(angle_rad), math.cos(angle_rad))
     clearTracers()
-
-    global posXY
+    clearDistanceText()
     posXY = canvas.coords(roombaObj)
 
 def rotate_left(event):
@@ -143,31 +144,29 @@ it needs as can be seen in virtual_infrared_sensor.py
 posXY = canvas.coords(roombaObj)
 
 # wrapper function to get distances using virtual_infrared_sensor.py
-def drawTracersAndDistancesWrapper():
+def wrapperFunction():
     global distanceData
     distanceData = getDistances(posXY, roombaRotation, floorJSON)
     # distanceData is a list with 3 elements, the first is the tuple of lengths from the 3 sensors (left, front, right, in that order),
     # the second is a list (inside the first list) with all lengths from walls in the 8 cardinal directions, the third and last elements
     # is the coords of each of the 8 endpt pixels to where lines will be drawn
 
-    clearTracers()
-    clearDistanceBoxes()
-    if showDistanceNumbers:
-        drawTracers("short")
-        drawDistanceBoxes()
-    else:
-        drawTracers("short")
+    drawTracers()
 
-def toggleDistanceText():
-    global showDistanceNumbers
-    showDistanceNumbers = not showDistanceNumbers
+# switch distances labels on/off
+global distLabelsOn
+distLabelsOn: bool = False
 
-# clears each coordinate box
-def clearDistanceBoxes():
+# flipflop function for toggling between lines or lines + label values
+def distLabelsToggle():
+    global distLabelsOn
+    distLabelsOn = not (distLabelsOn)
+
+def clearDistanceText():
     for coordText in distanceTextList:
         canvas.delete(coordText)
 
-def drawDistanceBoxes():
+def drawDistanceText():
     cardinalDirections = ["n", "nw", "w", "sw", "s", "se", "e", "ne"]
     distList = distanceData[1]
     xyList = distanceData[2]
@@ -184,40 +183,57 @@ def clearTracers():
     for line in lineList:
         canvas.delete(line)
 
-def drawTracers(tracerLength):
+def drawTracers():
+    clearTracers()
+    clearDistanceText()
     # uses pixel endpts to draw lines to visualize the lengths each number represents
-
-    for lineEndPts in distanceData[2]:
+    global distLabelsOn
+    global lineList
+    for i in range(0, 8):
+        lineEndPts = distanceData[2][i]
         # Coordinates of the line's start and end points
-        xPos = int(posXY[0]) + 10
-        yPos = int(posXY[1]) + 10
-        x1, y1 = (xPos), (yPos)  # Starting point (x1, y1)
+        x1, y1 = (int(posXY[0]) + 10), (int(posXY[1]) + 10)  # Starting point (x1, y1)
         x2, y2 = lineEndPts[0], lineEndPts[1]  # Ending point (x2, y2)
-        print("Current roomba pos:", xPos, yPos)
-        print("Current arrow pos:", x2, y2)
 
-        if tracerLength == "long":
-            arrowEndpointDelta = 1  # value to move arrow endpoint inwards towards, so ti deosnt touch the edge of the map
-        elif tracerLength == "short" and x2 > 25 and y2 > 25:
-            arrowEndpointDelta = 25
-            if x2 > xPos:
-                x2 -= arrowEndpointDelta
-            if x2 < xPos:
-                x2 += arrowEndpointDelta
-            if y2 > yPos:
-                y2 -= arrowEndpointDelta
-            if y2 < yPos:
-                y2 += arrowEndpointDelta
+        delta = 25
+        if ((distLabelsOn) and (((distanceData[1])[i]) > 25)):
+            if (x2 > x1):
+                x2 -= delta
+            elif (x2 < x1):
+                x2 += delta
+            if (y2 > y1):
+                y2 -= delta
+            elif (y2 < y1):
+                y2 += delta
 
-        # Draw a line from (x1, y1) to (x2, y2)
-        lineID = canvas.create_line(x1, y1, x2, y2, fill="blue", width=1, dash=(4, 2), arrow=tk.LAST)
-        lineList.append(lineID)
+            # if lines are of sufficient length, display arrow heads and full line lengths
+            if (((distanceData[1])[i]) > 50):
+                # Draw a line from (x1, y1) to (x2, y2)
+                arrowVar = tk.LAST
+            # if lines are NOT of sufficient length to display arrows, but long enough to be displayed, show points instead of arrows
+            # for the sake of visual clarity
+            else:
+                point_radius = 2
+                arrowVar = None
+                ptID = canvas.create_oval(x2 - point_radius, y2 - point_radius, x2 + point_radius, y2 + point_radius, fill="red", outline="red")
+                lineList.append(ptID)
+            # if lines are too short (< 25 units), do not display them at all to make space for length labels in the 'h'-key toggled mode
+            lineID = canvas.create_line(x1, y1, x2, y2, fill="blue", width=1, dash=(4, 2), arrow=arrowVar)
+            lineList.append(lineID)
+            drawDistanceText()
+        # if not in toggled mode, display arrows to edge of wall as normal as distance labels are not displayed in this mode
+        if (not (distLabelsOn)):
+            # Draw a line from (x1, y1) to (x2, y2)
+            lineID = canvas.create_line(x1, y1, x2, y2, fill="blue", width=1, dash=(4, 2), arrow=tk.LAST)
+            lineList.append(lineID)
 
 # Bind the 'g' key using lambda to get distances anytime g is pressed
 # tuple printed in terminal is in the order of (distance between left sensor and left wall,
 # distance from front sensor and front wall, distance from right sensor to right wall)
-window.bind('g', lambda event: drawTracersAndDistancesWrapper())
-window.bind('h', lambda event: toggleDistanceText())
+window.bind('g', lambda event: wrapperFunction())
+
+# When 'h' is pressed toggles on/off showing distance labels.
+window.bind('h', lambda event: distLabelsToggle())
 
 # Set focus on the window to receive key events
 window.focus_set()
