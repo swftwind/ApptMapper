@@ -183,6 +183,7 @@ def drawDistanceText():
     distList = distanceData[1]
     xyList = distanceData[2]
 
+    # converts virtual robot 'diagonal distances' into human distances by using pythagorean theorem to scale diagonal distances
     if (actualDistancesOn):
         i = 0
         for length in distList:
