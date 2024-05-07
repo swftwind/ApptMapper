@@ -188,7 +188,7 @@ def drawDistanceText():
         i = 0
         for length in distList:
             if ((i % 2) == 1):
-                distList[i] = int(length * 1.414)
+                distList[i] = int(length * 1.414) # since our 'rays' are at 45 deg angle, scaling factor is 1.414 or sqrt(2)
             i += 1
 
     clearDistanceText()
